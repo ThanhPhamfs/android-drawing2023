@@ -25,10 +25,12 @@ class MainActivity : AppCompatActivity() {
     private var drawing_view: DrawingView? = null
     private var btnBrush: ImageButton? = null
     private var btnGallery: ImageButton? = null
+    private var btnUndo: ImageButton? = null
+    private var btnRedo: ImageButton? = null
     private var mImageButtonCurrentPaint: ImageButton? = null
     val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK && result.data != null){
+            if (result.resultCode == RESULT_OK && result.data != null) {
                 val imageBackground: ImageView = findViewById(R.id.iv_background)
                 imageBackground.setImageURI(result.data?.data)
             }
@@ -66,6 +68,8 @@ class MainActivity : AppCompatActivity() {
         drawing_view = findViewById(R.id.drawing_view)
         btnBrush = findViewById(R.id.btnBrush)
         btnGallery = findViewById(R.id.btnGallery)
+        btnUndo = findViewById(R.id.btnUndo)
+        btnRedo = findViewById(R.id.btnRedo)
 //        Select red color for brush
         val linearLayoutColors = findViewById<LinearLayout>(R.id.ll_paint_colors)
         mImageButtonCurrentPaint = linearLayoutColors[1] as ImageButton
@@ -80,6 +84,8 @@ class MainActivity : AppCompatActivity() {
     private fun setEvent() {
         btnBrush?.setOnClickListener { showBrushSizeChooserDialog() }
         btnGallery?.setOnClickListener { requestStoragePermission() }
+        btnUndo?.setOnClickListener { drawing_view?.undo() }
+        btnRedo?.setOnClickListener { drawing_view?.redo() }
     }
 
     private fun requestStoragePermission() {
