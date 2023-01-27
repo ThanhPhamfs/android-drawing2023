@@ -8,6 +8,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.media.Image
+import android.media.MediaScannerConnection
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
@@ -102,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         btnUndo?.setOnClickListener { drawing_view?.undo() }
         btnRedo?.setOnClickListener { drawing_view?.redo() }
         btnSave?.setOnClickListener {
-            if (isReadStorageAllowed()){
+            if (isReadStorageAllowed()) {
                 lifecycleScope.launch {
                     showProgressDialog()
                     val flDrawingView: FrameLayout = findViewById(R.id.fl_drawing_view_container)
@@ -123,7 +124,12 @@ class MainActivity : AppCompatActivity() {
                 "Kids Drawing App needs to access Your External Storage"
             )
         } else {
-            requestPermission.launch(arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE, android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
+            requestPermission.launch(
+                arrayOf(
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+            )
         }
     }
 
@@ -212,7 +218,8 @@ class MainActivity : AppCompatActivity() {
                                 Toast.LENGTH_LONG
                             ).show()
                             Log.d("RESULT", result)
-                        }else{
+                            shareImage(result)
+                        } else {
                             Toast.makeText(
                                 this@MainActivity,
                                 "Something went wrong while saving the file!",
@@ -220,8 +227,7 @@ class MainActivity : AppCompatActivity() {
                             ).show()
                         }
                     }
-                }
-                catch (e: Exception){
+                } catch (e: Exception) {
                     result = ""
                     e.printStackTrace()
                 }
@@ -230,8 +236,11 @@ class MainActivity : AppCompatActivity() {
         return result
     }
 
-    private fun isReadStorageAllowed(): Boolean{
-        var result = ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+    private fun isReadStorageAllowed(): Boolean {
+        var result = ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+        )
         return result == PackageManager.PERMISSION_GRANTED
     }
 
@@ -260,5 +269,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
+    /**
+     * this function is used to share images
+     */
+    private fun shareImage(result: String) {
+        MediaScannerConnection.scanFile(this, arrayOf(result), null) { path, uri ->
+            val shareIntent = Intent()
+            shareIntent.action = Intent.ACTION_SEND
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
+            shareIntent.type = "image/png"
+            startActivity(Intent.createChooser(shareIntent, "Share"))
+        }
+    }
 }
